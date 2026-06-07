@@ -1,0 +1,88 @@
+# curvas.py
+
+## Tabla de Contenidos
+
+- [Requisitos](#-requisitos)
+- [Instalación](#-instalación)
+- [Uso](#-uso)
+- [Ejemplos](#-ejemplos)
+- [Licencia](#-licencia)
+
+## Requisitos
+
+- **Python 3.x**
+
+```bash
+pip install numba
+pip install pandas
+pip install geopandas pyshp simplekml shapely
+```
+
+
+
+## Instalación
+
+Sigue estos pasos para configurar el entorno y ejecutar el script en tu máquina local:
+
+1. **Clona el repositorio:**
+   
+   ```bash
+   git clone https://github.com/geon6-sebastian/curvaalineacion.git
+   cd [tu-repositorio]
+   ```
+
+
+
+---
+
+## 🎮 Uso
+
+Para ejecutar el script, utiliza el siguiente comando en la terminal:
+
+```bash
+python curvas.py [argumentos]
+```
+
+### Argumentos disponibles
+
+| Argumento                                 | Descripción                                                                                                          | Requerido        | Default                    |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------- | -------------------------- |
+| -i, --inverso                             | Ejecutar problema inverso                                                                                            | No               | -                          |
+| -d, --directo                             | Ejecutar problema directo                                                                                            | No               | -                          |
+| -poly, --poly-sup ('coords.csv')          | Calcula la superficie dentro de un polígono dado en un archivo CSV/TXT                                               | No               | -                          |
+| -t, --tipo ['align', 'normal', 'central'] |                                                                                                                      | No               | 'central'                  |
+| -P1 (latitud longitud)                    | Punto 1: latitud longitud (en grados decimales). Requerido para -i y -d                                              | Si, para -i y -d | -                          |
+| -P2 (latitud longitud)                    | Punto 1: latitud longitud (en grados decimales). Requerido para -i                                                   | Si, para -i      | -                          |
+| -e (a, inv_f)                             | Elipsoide: semieje_mayor inversa_aplastamiento (por defecto: GRS80)                                                  |                  | GRS80_a, 298.2572221008827 |
+| -o, --output ('nombrearchivo')            | Nombre base para guardar salidas (KMZ, SHP, CSV). Este comando SOBREESCRIBE los archivos existentes del mismo nombre | No               | -                          |
+| -az (acimut)                              | Acimut inicial (en grados decimales). Requerido para -d                                                              | Si, para -d      | -                          |
+| -s (distancia)                            | Distancia (en metros). Requerido para -d                                                                             | Si, para -d      | -                          |
+| -mstep, --max-step (paso)                 | Paso máximo de h para Dormand-Prince en grados decimales                                                             | No               | 0.1                        |
+
+---
+
+## 📝 Ejemplos
+
+Aquí tienes algunos ejemplos de cómo usar el script en diferentes situaciones:
+
+**Ejemplo básico (Procesar un archivo):**
+
+```bash
+python mi_script.py -i datos.xlsx
+```
+
+**Ejemplo con salida personalizada y modo verbose:**
+
+```bash
+python mi_script.py -i datos.xlsx -o resultados.json -v
+```
+
+ 
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT.
+
+---
