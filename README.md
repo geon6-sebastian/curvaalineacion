@@ -28,7 +28,7 @@ Sigue estos pasos para configurar el entorno y ejecutar el script en tu máquina
    
    ```bash
    git clone https://github.com/geon6-sebastian/curvaalineacion.git
-   cd [tu-repositorio]
+   cd curvaalineacion
    ```
 
 
