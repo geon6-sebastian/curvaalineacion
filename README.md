@@ -65,16 +65,16 @@ python curvas.py [argumentos]
 
 Aquí tienes algunos ejemplos de cómo usar el script en diferentes situaciones:
 
-**Ejemplo básico (Procesar un archivo):**
+**Ejemplo básico (Problema directo, paso 0.01 grados):**
 
 ```bash
-python mi_script.py -i datos.xlsx
+python curvas.py -d -P1 -30 -60 -a 30 -s 5000000 -t align -o align_0.01 -mstep 0.01
 ```
 
-**Ejemplo con salida personalizada y modo verbose:**
+**Cálculo de polígono uniendo vértices con la curva de alineación:**
 
 ```bash
-python mi_script.py -i datos.xlsx -o resultados.json -v
+python curvas.py -poly coords.csv -o nombre_poligono -t align
 ```
 
  
