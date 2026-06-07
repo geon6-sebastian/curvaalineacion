@@ -71,7 +71,7 @@ Aquí tienes algunos ejemplos de cómo usar el script en diferentes situaciones:
 python curvas.py -d -P1 -30 -60 -a 30 -s 5000000 -t align -o align_0.01 -mstep 0.01
 ```
 
-**Cálculo de polígono uniendo vértices con la curva de alineación:**
+**Cálculo de la superficie de un polígono uniendo vértices con la curva de alineación:**
 
 ```bash
 python curvas.py -poly coords.csv -o nombre_poligono -t align
