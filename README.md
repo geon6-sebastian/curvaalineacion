@@ -21,10 +21,10 @@ pip install geopandas pyshp simplekml shapely
 ## Instalación
 
 **Clonar el repositorio:**
-
+```bash
 git clone https://github.com/geon6-sebastian/curvaalineacion.git
 cd curvaalineacion
-
+```
 ---
 
 ## Uso
