@@ -1770,10 +1770,10 @@ def main():
 
     args = parser.parse_args()
 
-    # --- Paso máximo en grados decimales (a radianes) ---
+    # Paso máximo en grados decimales
     MAXSTEPRK45_ANG = DEG2RAD(args.max_step)
 
-    # --- Validaciones ---
+    # Validaciones de args
     if args.inverso and not args.P2:
         parser.error("El problema inverso (-i) requiere el parámetro -P2")
     if args.directo and (args.az is None or args.s is None):
@@ -1781,7 +1781,7 @@ def main():
     if (args.inverso or args.directo) and not args.P1:
         parser.error("Los problemas directo (-d) e inverso (-i) requieren el parámetro -P1")
 
-    # --- Inicialización del Elipsoide ---
+    # Inicialización del Elipsoide
     a_elli, inv_f_elli = args.e
     f_elli = 1.0 / inv_f_elli if inv_f_elli != 0 else 0.0
     elli = pelipsoide_init(f_elli, a_elli)
@@ -1792,7 +1792,7 @@ def main():
 
     # =====================================================================
     # PROBLEMA INVERSO
-    # =====================================================================
+    
     if args.inverso:
         phi1 = DEG2RAD(args.P1[0])
         L1 = DEG2RAD(args.P1[1])
@@ -1819,7 +1819,7 @@ def main():
 
     # =====================================================================
     # PROBLEMA DIRECTO
-    # =====================================================================
+    
     elif args.directo:
         phi1 = DEG2RAD(args.P1[0])
         L1 = DEG2RAD(args.P1[1])
@@ -1835,14 +1835,14 @@ def main():
 
         
         
-        # --- Imprimir Resultados en Consola ---
+        # Salida
         print("\n" + "="*40)
         print(f"Latitud P2 (deg): {RAD2DEG(phi2):.10f}")
         print(f"Longitud P2 (deg): {RAD2DEG(L2):.10f}")        
         print("="*40 + "\n")
 
         # Para poder exportar la curva en el problema directo, 
-        # necesitamos los pathpoints, por lo que calculamos el inverso hacia el P2 encontrado.
+        # necesitamos pathpoints, se calcula el problema inverso hacia el P2 encontrado.
         if args.output:
             if args.tipo == 'align':
                 _, _, _, _, _, pathpoints = inv_align_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
@@ -1852,9 +1852,9 @@ def main():
                 _, _, _, _, _, pathpoints = inv_central_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
             csv_pathpoints = pathpoints.copy()
 
-        # =====================================================================
-    # SUPERFICIE DE POLÍGONO
     # =====================================================================
+    # SUPERFICIE DE POLÍGONO
+    
     elif args.poly_sup:
         vertices_grados = leer_poligono_archivo(args.poly_sup)
         
@@ -1910,21 +1910,19 @@ def main():
         else:
             pathpoints = None
 
-        # =====================================================================
-        # CONSTRUIR ARREGLO LIMPIO PARA EL CSV (Lat, Lon, Acimut, Dist, Area)
-        # =====================================================================
+        
+        # CONSTRUIR TABLA CSV (Lat, Lon, Acimut, Dist, Area)
+        
         csv_rows = []
         for i in range(len(vertices_rad)):
             lat_deg = RAD2DEG(vertices_rad[i][0])
             lon_deg = RAD2DEG(vertices_rad[i][1])
             dist_out, azi_out, area_out = propiedades_aristas[i]
-            csv_rows.append([lat_deg, lon_deg, azi_out, dist_out, area_out])
-        
-        # Cerrar el polígono repitiendo el primer vértice con sus mismos datos
+            csv_rows.append([lat_deg, lon_deg, azi_out, dist_out, area_out])                
         #csv_rows.append(csv_rows[0])
         csv_pathpoints = np.array(csv_rows)
             
-        # --- Imprimir el resumen en consola ---
+        # Salida
         print("-"*50)
         print(f"{'Arista':<10} {'Distancia (m)':<15} {'Acimut (deg)':<15}")
         print("-"*50)
@@ -1937,7 +1935,7 @@ def main():
         print(f"Superficie del polígono (m2): {abs(total_area):.2f}")
         print("="*50 + "\n")
 
-    # --- Exportar Archivos si existe (-o) ---
+    # Exportar archivos, si existe (-o)
     if args.output and pathpoints is not None:
         base_name = args.output
         dir_name = os.path.dirname(base_name)
@@ -1945,13 +1943,11 @@ def main():
             os.makedirs(dir_name)
 
         print(f"Generando archivos: {base_name}.* ...")
-        try:
-            # KMZ y SHP usan el arreglo con todos los puntos interpolados (curvas suaves)
+        try:            
             guardar_curva_kmz(pathpoints, f"{base_name}.kmz")
             guardar_como_point_shapefile(pathpoints, f"{base_name}_puntos.shp")
-            guardar_como_linea_shapefile(pathpoints, f"{base_name}_linea.shp")
+            guardar_como_linea_shapefile(pathpoints, f"{base_name}_linea.shp")            
             
-            # CSV usa el arreglo limpio, sin puntos intermedios y con datos del tramo saliente
             np.savetxt(f"{base_name}.csv", csv_pathpoints, delimiter=",", fmt='%.10f')
             print("Archivos generados\n")
         except Exception as e:
