@@ -481,6 +481,10 @@ MAXSTEPRK45_ANG_INITIALVALUE = DEG2RAD(0.1)
 MAXSTEP_h = 1E-5
 MAXDIST = 10.0
 
+#cantidad máxima de iteraciones para DormandPrince
+#este valor se usa en resolver_area_
+MAX_ITER = 200000
+
 @dataclass
 class pRK45_t:
     tol: float
@@ -739,7 +743,13 @@ def resolver_area_L_(tol, h_max, h_min, plat, elli, cs, beta0, L0, LE, edos_L_ar
     betas = [beta0]
     dists = [0.0]
     sups = [0.0]
+    iter_count = 0
     while avanzado < deltaL_total - EPSILON_ANG:
+        iter_count = iter_count + 1
+        if iter_count > MAX_ITER:
+            print(f"Error: Integración no converge (align) tras {MAX_ITER} iteraciones.\n  Avance: {avanzado:.6} de {deltaL_total:.6}, h actual: {h:.2e}")
+            break
+
         if avanzado + h > deltaL_total:
             h = deltaL_total - avanzado
 
@@ -779,7 +789,12 @@ def resolver_area_beta_(tol, h_max, h_min, plat, elli, cs, L0, beta0, betaE, edo
     lambdas = [L0]
     dists = [0.0]
     sups = [0.0]
+    iter_count = 0
     while avanzado < deltaBeta_total - EPSILON_ANG:
+        iter_count = iter_count + 1
+        if iter_count > MAX_ITER:
+            print(f"Error: Integración no converge (align) tras {MAX_ITER} iteraciones.\n  Avance: {avanzado:.6} de {deltaBeta_total:.6}, h actual: {h:.2e}")
+            break
         if avanzado + h > deltaBeta_total:
             h = deltaBeta_total - avanzado
 
@@ -1814,8 +1829,8 @@ def main():
         print(f"Acimut (deg): {RAD2DEG(alpha):.10f}")
         print(f"Distancia (m): {dist:.4f}")
         print(f"Area (m2): {area:.0f}")
-        print(f"Latitud Vértice phi0 (deg): {Phi0:.10f}")
-        print(f"Longitud Vértice L0 (deg): {L0:.10f}")
+        print(f"Latitud Vértice phi0 (deg): {RAD2DEG(Phi0):.10f}")
+        print(f"Longitud Vértice L0 (deg): {RAD2DEG(L0):.10f}")
         print("="*40 + "\n")
 
     # =====================================================================
@@ -1844,8 +1859,8 @@ def main():
         print(f"Acimut Calculado (deg): {RAD2DEG(alpha_calc):.10f}")
         print(f"Distancia Calculada (m): {dist_calc:.4f}")
         print(f"Area (m2): {area:.0f}")
-        print(f"Latitud Vértice phi0 (deg): {Phi0:.10f}")
-        print(f"Longitud Vértice L0 (deg): {L0:.10f}")
+        print(f"Latitud Vértice phi0 (deg): {RAD2DEG(Phi0):.10f}")
+        print(f"Longitud Vértice L0 (deg): {RAD2DEG(L0):.10f}")
         print("="*40 + "\n")            
 
     # =====================================================================
