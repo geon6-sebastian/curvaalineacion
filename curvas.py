@@ -2,7 +2,7 @@ import math
 import numpy as np
 import numba
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 DEBUG = False
 
@@ -140,39 +140,40 @@ def pelipsoide_init(in_f: float, in_a: float) :
 	p.Rmu = p.Rm*(1.0 +p.n2/4.0 +p.n4/64.0 +p.n6/256.0)
 	return p
 
+# cuidado, si se hace GEOD2RECT = : list = field(default_factory=lambda: [0.0]*7), la lista es compartida por todas las instancias
 @dataclass
 class platn6_t:
-	GEOD2RECT = [0.0 for i in range(7)] 
-	RECT2GEOD = [0.0 for i in range(7)]
-	ISOM2GEOD = [0.0 for i in range(7)]
-	GEOD2CONF = [0.0 for i in range(7)]
-	CONF2GEOD = [0.0 for i in range(7)]
-	GEOD2AUTH = [0.0 for i in range(7)]
-	AUTH2GEOD = [0.0 for i in range(7)]
-	GEOD2GEOC = [0.0 for i in range(7)]
-	GEOC2GEOD = [0.0 for i in range(7)]
-	GEOD2PARA = [0.0 for i in range(7)]
-	PARA2GEOD = [0.0 for i in range(7)]
-	CONF2RECT = [0.0 for i in range(7)]
-	AUTH2RECT = [0.0 for i in range(7)]
-	RECT2CONF = [0.0 for i in range(7)]
-	RECT2AUTH = [0.0 for i in range(7)]
-	GEOC2RECT = [0.0 for i in range(7)]
-	RECT2GEOC = [0.0 for i in range(7)]
-	PARA2RECT = [0.0 for i in range(7)]
-	RECT2PARA = [0.0 for i in range(7)]
-	AUTH2CONF = [0.0 for i in range(7)]
-	CONF2AUTH = [0.0 for i in range(7)]
-	GEOC2CONF = [0.0 for i in range(7)]
-	CONF2GEOC = [0.0 for i in range(7)]
-	PARA2CONF = [0.0 for i in range(7)]
-	CONF2PARA = [0.0 for i in range(7)]
-	GEOC2AUTH = [0.0 for i in range(7)]
-	AUTH2GEOC = [0.0 for i in range(7)]
-	PARA2AUTH = [0.0 for i in range(7)]
-	AUTH2PARA = [0.0 for i in range(7)]
-	PARA2GEOC = [0.0 for i in range(7)]
-	GEOC2PARA = [0.0 for i in range(7)]
+	GEOD2RECT: list = field(default_factory=lambda: [0.0]*7)
+	RECT2GEOD: list = field(default_factory=lambda: [0.0]*7)
+	ISOM2GEOD: list = field(default_factory=lambda: [0.0]*7)
+	GEOD2CONF: list = field(default_factory=lambda: [0.0]*7)
+	CONF2GEOD: list = field(default_factory=lambda: [0.0]*7)
+	GEOD2AUTH: list = field(default_factory=lambda: [0.0]*7)
+	AUTH2GEOD: list = field(default_factory=lambda: [0.0]*7)
+	GEOD2GEOC: list = field(default_factory=lambda: [0.0]*7)
+	GEOC2GEOD: list = field(default_factory=lambda: [0.0]*7)
+	GEOD2PARA: list = field(default_factory=lambda: [0.0]*7)
+	PARA2GEOD: list = field(default_factory=lambda: [0.0]*7)
+	CONF2RECT: list = field(default_factory=lambda: [0.0]*7)
+	AUTH2RECT: list = field(default_factory=lambda: [0.0]*7)
+	RECT2CONF: list = field(default_factory=lambda: [0.0]*7)
+	RECT2AUTH: list = field(default_factory=lambda: [0.0]*7)
+	GEOC2RECT: list = field(default_factory=lambda: [0.0]*7)
+	RECT2GEOC: list = field(default_factory=lambda: [0.0]*7)
+	PARA2RECT: list = field(default_factory=lambda: [0.0]*7)
+	RECT2PARA: list = field(default_factory=lambda: [0.0]*7)
+	AUTH2CONF: list = field(default_factory=lambda: [0.0]*7)
+	CONF2AUTH: list = field(default_factory=lambda: [0.0]*7)
+	GEOC2CONF: list = field(default_factory=lambda: [0.0]*7)
+	CONF2GEOC: list = field(default_factory=lambda: [0.0]*7)
+	PARA2CONF: list = field(default_factory=lambda: [0.0]*7)
+	CONF2PARA: list = field(default_factory=lambda: [0.0]*7)
+	GEOC2AUTH: list = field(default_factory=lambda: [0.0]*7)
+	AUTH2GEOC: list = field(default_factory=lambda: [0.0]*7)
+	PARA2AUTH: list = field(default_factory=lambda: [0.0]*7)
+	AUTH2PARA: list = field(default_factory=lambda: [0.0]*7)
+	PARA2GEOC: list = field(default_factory=lambda: [0.0]*7)
+	GEOC2PARA: list = field(default_factory=lambda: [0.0]*7)
 
 def init_platn6(n : float):
 	n2 = n*n
@@ -1808,7 +1809,7 @@ def main():
         
         csv_pathpoints = pathpoints.copy()
         
-        # --- Imprimir Resultados en Consola ---
+        # Salida en Consola ---
         print("\n" + "="*40)
         print(f"Acimut (deg): {RAD2DEG(alpha):.10f}")
         print(f"Distancia (m): {dist:.4f}")
@@ -1828,29 +1829,24 @@ def main():
 
         if args.tipo == 'align':
             phi2, L2 = direct_curva_align_(plat, elli, phi1, L1, alpha, dist)
+            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_align_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
         elif args.tipo == 'normal':
             phi2, L2 = direct_curva_normal_(plat, elli, phi1, L1, alpha, dist)
+            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_normal_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
         elif args.tipo == 'central':
             phi2, L2 = direct_curva_central_(plat, elli, phi1, L1, alpha, dist)
-
-        
-        
+            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_central_area(plat, elli, phi1, L1, phi2, L2, L1, L2)        
+        csv_pathpoints = pathpoints.copy()
         # Salida
         print("\n" + "="*40)
         print(f"Latitud P2 (deg): {RAD2DEG(phi2):.10f}")
-        print(f"Longitud P2 (deg): {RAD2DEG(L2):.10f}")        
-        print("="*40 + "\n")
-
-        # Para poder exportar la curva en el problema directo, 
-        # necesitamos pathpoints, se calcula el problema inverso hacia el P2 encontrado.
-        if args.output:
-            if args.tipo == 'align':
-                _, _, _, _, _, pathpoints = inv_align_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
-            elif args.tipo == 'normal':
-                _, _, _, _, _, pathpoints = inv_normal_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
-            elif args.tipo == 'central':
-                _, _, _, _, _, pathpoints = inv_central_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
-            csv_pathpoints = pathpoints.copy()
+        print(f"Longitud P2 (deg): {RAD2DEG(L2):.10f}")
+        print(f"Acimut Calculado (deg): {RAD2DEG(alpha_calc):.10f}")
+        print(f"Distancia Calculada (m): {dist_calc:.4f}")
+        print(f"Area (m2): {area:.0f}")
+        print(f"Latitud Vértice phi0 (deg): {Phi0:.10f}")
+        print(f"Longitud Vértice L0 (deg): {L0:.10f}")
+        print("="*40 + "\n")            
 
     # =====================================================================
     # SUPERFICIE DE POLÍGONO
@@ -1946,8 +1942,7 @@ def main():
         try:            
             guardar_curva_kmz(pathpoints, f"{base_name}.kmz")
             guardar_como_point_shapefile(pathpoints, f"{base_name}_puntos.shp")
-            guardar_como_linea_shapefile(pathpoints, f"{base_name}_linea.shp")            
-            
+            guardar_como_linea_shapefile(pathpoints, f"{base_name}_linea.shp")
             np.savetxt(f"{base_name}.csv", csv_pathpoints, delimiter=",", fmt='%.10f')
             print("Archivos generados\n")
         except Exception as e:
