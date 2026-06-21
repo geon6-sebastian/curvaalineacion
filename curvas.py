@@ -603,11 +603,7 @@ def edos_L_area_align_(plat, elli, cs, y, L):
     dbeta_dL = -g_L / g_beta
     ds_dL = elli.a * math.sqrt((1.0 - elli.e2 * cbeta**2) * dbeta_dL**2 + cbeta**2)    
     R_tau_sq = elli.R2**2
-    tau = lat2latn6(plat.PARA2AUTH, beta)
-    #en caso de que el aplastamiento no es un valor pequeño, se debe calcular en forma exacta
-    #aunque en este caso hay una fórmula más directa para calcular la superficie
-    #tau = beta2tau(elli, beta)
-    
+    tau = lat2latn6(plat.PARA2AUTH, beta)    
     dS_dL = R_tau_sq * math.sin(tau)
 
     return np.array([dbeta_dL, ds_dL, dS_dL])
@@ -891,6 +887,11 @@ def partials_inverse_dist_align_(pRK45, plat, elli, beta1:float, L1:float, beta2
     return alpha, dist, alpha_beta, dist_beta, alpha_L, dist_L
 
 def direct_curva_align_(plat, elli, phi1:float, L1:float, ALPHA, DIST):
+    print("directo")
+    if math.fabs(math.sin(ALPHA)) < EPSILON_ANG:        
+        phi2, L2 = direct_curva_meridian(plat, elli, phi1, L1, ALPHA, DIST)
+        return phi2, L2
+    
     phi2, L2 = CentralSect2GEO(plat, elli, phi1, L1, ALPHA, DIST)
     beta1 = phi2beta(elli, phi1)
     beta2 = phi2beta(elli, phi2)
@@ -946,7 +947,28 @@ def inv_align_dist(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11:f
     pathpoints = np.column_stack((phis, lambdas, alphas, dists))
     return alpha, dist, Phi0, L0, pathpoints
 
-def inv_align_area(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11:float, L22:float):
+def inv_align_area(plat, elli, phi1:float, L1:float, phi2:float, L2:float):
+    alphas = []
+    tol = EPSILON_ANG; h_max = MAXSTEPRK45_ANG; h_min = EPSILON_ANG    
+    pRK45 = pRK45_t(tol, h_max, h_min)
+    beta1 = phi2beta(elli, phi1)
+    beta2 = phi2beta(elli, phi2)
+    cs = cs_align_(elli, beta1, L1, beta2, L2)
+    beta11 = beta1
+    beta22 = beta2
+    Beta0, L0 = CalcBeta0_align(elli, cs, beta2, 0.5*(L2-L1))
+    alpha, dist, area, lambdas, betas, dists, areas = inverse_area_align_(pRK45, plat, elli, cs, beta1, L1, beta2, L2)
+    phis = []
+    Phi0 = beta2phi(elli, Beta0)
+    for i in range(0, len(betas)):
+        phis.append(RAD2DEG(beta2phi(elli, betas[i])))
+        alphas.append(RAD2DEG(acimut_align_(elli, cs, betas[i], lambdas[i])))
+        lambdas[i] = RAD2DEG(lambdas[i])
+
+    pathpoints = np.column_stack((phis, lambdas, alphas, dists, areas))
+    return alpha, dist, area, Phi0, L0, pathpoints
+
+def inv_align_area_ex(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11:float, L22:float):
     alphas = []
     tol = EPSILON_ANG; h_max = MAXSTEPRK45_ANG; h_min = EPSILON_ANG    
     pRK45 = pRK45_t(tol, h_max, h_min)
@@ -1223,6 +1245,9 @@ def partials_inverse_dist_central_(pRK45, plat, elli, beta1:float, L1:float, bet
     return alpha, dist, alpha_beta, dist_beta, alpha_L, dist_L
 
 def direct_curva_central_(plat, elli, phi1:float, L1:float, ALPHA, DIST):
+    if math.fabs(math.sin(ALPHA)) < EPSILON_ANG:
+        phi2, L2 = direct_curva_meridian(plat, elli, phi1, L1, ALPHA, DIST)
+        return phi2, L2
     phi2, L2 = CentralSect2GEO(plat, elli, phi1, L1, ALPHA, DIST)
     beta1 = phi2beta(elli, phi1)
     beta2 = phi2beta(elli, phi2)
@@ -1278,7 +1303,28 @@ def inv_central_dist(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11
     pathpoints = np.column_stack((phis, lambdas, alphas, dists))
     return alpha, dist, Phi0, L0, pathpoints
 
-def inv_central_area(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11:float, L22:float):
+def inv_central_area(plat, elli, phi1:float, L1:float, phi2:float, L2:float):
+    alphas = []
+    tol = EPSILON_ANG; h_max = MAXSTEPRK45_ANG; h_min = EPSILON_ANG    
+    pRK45 = pRK45_t(tol, h_max, h_min)
+    beta1 = phi2beta(elli, phi1)
+    beta2 = phi2beta(elli, phi2)
+    cs = cs_central_(elli, beta1, L1, beta2, L2)
+    beta11 = beta1
+    beta22 = beta2
+    Beta0, L0 = CalcBeta0_central(elli, cs, beta2, 0.5*(L2-L1))
+    alpha, dist, area, lambdas, betas, dists, areas = inverse_area_central_(pRK45, plat, elli, cs, beta1, L1, beta2, L2)
+    phis = []
+    Phi0 = beta2phi(elli, Beta0)
+    for i in range(0, len(betas)):
+        phis.append(RAD2DEG(beta2phi(elli, betas[i])))
+        alphas.append(RAD2DEG(acimut_central_(elli, cs, betas[i], lambdas[i])))
+        lambdas[i] = RAD2DEG(lambdas[i])
+
+    pathpoints = np.column_stack((phis, lambdas, alphas, dists, areas))
+    return alpha, dist, area, Phi0, L0, pathpoints
+
+def inv_central_area_ex(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11:float, L22:float):
     alphas = []
     tol = EPSILON_ANG; h_max = MAXSTEPRK45_ANG; h_min = EPSILON_ANG    
     pRK45 = pRK45_t(tol, h_max, h_min)
@@ -1503,7 +1549,25 @@ def partials_inverse_dist_normal_(pRK45, plat, elli, beta1:float, L1:float, beta
 
     return alpha, dist, alpha_beta, dist_beta, alpha_L, dist_L
 
+def direct_curva_meridian(plat, elli, phi1: float, lambda1: float, alpha: float, s12: float):
+    mu1 = lat2latn6(plat.GEOD2RECT, phi1)
+    lambda2 = lambda1
+    sgn_s12 = sgn(math.sin(alpha))
+    s1 = elli.Rmu * mu1
+    Q = elli.Rmu * PI_2
+    s2 = s12 * sgn_s12 + s1
+    mu2 = s2 / elli.Rmu
+    phi2 = lat2latn6(plat.RECT2GEOD, mu2)
+    if math.fabs(s2) > Q:
+        lambda2 = tosemicirc(lambda1 + PI)    
+    return phi2, lambda2    
+
 def direct_curva_normal_(plat, elli, phi1:float, L1:float, ALPHA, DIST):
+
+    if math.fabs(math.sin(ALPHA)) < EPSILON_ANG:
+        phi2, L2 = direct_curva_meridian(plat, elli, phi1, L1, ALPHA, DIST)
+        return phi2, L2
+
     phi2, L2 = CentralSect2GEO(plat, elli, phi1, L1, ALPHA, DIST)
     beta1 = phi2beta(elli, phi1)
     beta2 = phi2beta(elli, phi2)
@@ -1558,7 +1622,28 @@ def inv_normal_dist(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11:
     pathpoints = np.column_stack((phis, lambdas, alphas, dists))
     return alpha, dist, Phi0, L0, pathpoints
 
-def inv_normal_area(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11:float, L22:float):
+def inv_normal_area(plat, elli, phi1:float, L1:float, phi2:float, L2:float):
+    alphas = []
+    tol = EPSILON_ANG; h_max = MAXSTEPRK45_ANG; h_min = EPSILON_ANG
+    pRK45 = pRK45_t(tol, h_max, h_min)
+    beta1 = phi2beta(elli, phi1)
+    beta2 = phi2beta(elli, phi2)
+    cs = cs_normal_(elli, beta1, L1, beta2, L2)
+    beta11 = beta1
+    beta22 = beta2
+    Beta0, L0 = CalcBeta0_normal(elli, cs, beta2, 0.5*(L2-L1))
+    alpha, dist, area, lambdas, betas, dists, areas = inverse_area_normal_(pRK45, plat, elli, cs, beta1, L1, beta2, L2)
+    phis = []
+    Phi0 = beta2phi(elli, Beta0)
+    for i in range(0, len(betas)):
+        phis.append(RAD2DEG(beta2phi(elli, betas[i])))
+        alphas.append(RAD2DEG(acimut_normal_(elli, cs, betas[i], lambdas[i])))
+        lambdas[i] = RAD2DEG(lambdas[i])
+
+    pathpoints = np.column_stack((phis, lambdas, alphas, dists, areas))
+    return alpha, dist, area, Phi0, L0, pathpoints
+
+def inv_normal_area_ex(plat, elli, phi1:float, L1:float, phi2:float, L2:float, L11:float, L22:float):
     alphas = []
     tol = EPSILON_ANG; h_max = MAXSTEPRK45_ANG; h_min = EPSILON_ANG
     pRK45 = pRK45_t(tol, h_max, h_min)
@@ -1669,20 +1754,12 @@ def guardar_como_linea_shapefile(pathpoints, nombre_archivo="curva_linea.shp"):
     gdf_linea = gpd.GeoDataFrame(geometry=[linea], crs="EPSG:4326")
     gdf_linea.to_file(nombre_archivo)
 
-#-------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------
 
 import argparse
 import os
 import csv
 import numpy as np
-
-# Asumo que estas funciones y constantes ya están definidas en tu archivo original
-# from tu_modulo import (GRS80_a, MAXSTEPRK45_ANG_INITIALVALUE, RAD2DEG, DEG2RAD, 
-#                         pelipsoide_init, init_platn6, inv_align_area, inv_normal_area, 
-#                         inv_central_area, direct_curva_align_, direct_curva_normal_, 
-#                         direct_curva_central_, guardar_curva_kmz, guardar_como_point_shapefile, 
-#                         guardar_como_linea_shapefile)
-
 import re
 
 def leer_poligono_archivo(filepath):
@@ -1816,11 +1893,11 @@ def main():
         L2 = DEG2RAD(args.P2[1])
 
         if args.tipo == 'align':
-            alpha, dist, area, Phi0, L0, pathpoints = inv_align_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
+            alpha, dist, area, Phi0, L0, pathpoints = inv_align_area(plat, elli, phi1, L1, phi2, L2)
         elif args.tipo == 'normal':
-            alpha, dist, area, Phi0, L0, pathpoints = inv_normal_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
+            alpha, dist, area, Phi0, L0, pathpoints = inv_normal_area(plat, elli, phi1, L1, phi2, L2)
         elif args.tipo == 'central':
-            alpha, dist, area, Phi0, L0, pathpoints = inv_central_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
+            alpha, dist, area, Phi0, L0, pathpoints = inv_central_area(plat, elli, phi1, L1, phi2, L2)
         
         csv_pathpoints = pathpoints.copy()
         
@@ -1844,13 +1921,13 @@ def main():
 
         if args.tipo == 'align':
             phi2, L2 = direct_curva_align_(plat, elli, phi1, L1, alpha, dist)
-            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_align_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
+            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_align_area(plat, elli, phi1, L1, phi2, L2)
         elif args.tipo == 'normal':
             phi2, L2 = direct_curva_normal_(plat, elli, phi1, L1, alpha, dist)
-            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_normal_area(plat, elli, phi1, L1, phi2, L2, L1, L2)
+            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_normal_area(plat, elli, phi1, L1, phi2, L2)
         elif args.tipo == 'central':
             phi2, L2 = direct_curva_central_(plat, elli, phi1, L1, alpha, dist)
-            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_central_area(plat, elli, phi1, L1, phi2, L2, L1, L2)        
+            alpha_calc, dist_calc, area, Phi0, L0, pathpoints = inv_central_area(plat, elli, phi1, L1, phi2, L2)
         csv_pathpoints = pathpoints.copy()
         # Salida
         print("\n" + "="*40)
@@ -1901,11 +1978,11 @@ def main():
             
             # Capturamos alpha, dist y area
             if args.tipo == 'align':
-                alpha, dist, area, _, _, path_seg = inv_align_area(plat, elli, p1[0], p1[1], p2[0], p2[1], p1[1], p2[1])
+                alpha, dist, area, _, _, path_seg = inv_align_area(plat, elli, p1[0], p1[1], p2[0], p2[1])
             elif args.tipo == 'normal':
-                alpha, dist, area, _, _, path_seg = inv_normal_area(plat, elli, p1[0], p1[1], p2[0], p2[1], p1[1], p2[1])
+                alpha, dist, area, _, _, path_seg = inv_normal_area(plat, elli, p1[0], p1[1], p2[0], p2[1])
             elif args.tipo == 'central':
-                alpha, dist, area, _, _, path_seg = inv_central_area(plat, elli, p1[0], p1[1], p2[0], p2[1], p1[1], p2[1])
+                alpha, dist, area, _, _, path_seg = inv_central_area(plat, elli, p1[0], p1[1], p2[0], p2[1])
             
             total_area += area
             segments.append(path_seg)
