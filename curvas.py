@@ -140,7 +140,7 @@ def pelipsoide_init(in_f: float, in_a: float) :
 	p.Rmu = p.Rm*(1.0 +p.n2/4.0 +p.n4/64.0 +p.n6/256.0)
 	return p
 
-# cuidado, si se hace GEOD2RECT = : list = field(default_factory=lambda: [0.0]*7), la lista es compartida por todas las instancias
+# cuidado, si no se hace GEOD2RECT = : list = field(default_factory=lambda: [0.0]*7), la lista es compartida por todas las instancias
 @dataclass
 class platn6_t:
 	GEOD2RECT: list = field(default_factory=lambda: [0.0]*7)
@@ -887,7 +887,6 @@ def partials_inverse_dist_align_(pRK45, plat, elli, beta1:float, L1:float, beta2
     return alpha, dist, alpha_beta, dist_beta, alpha_L, dist_L
 
 def direct_curva_align_(plat, elli, phi1:float, L1:float, ALPHA, DIST):
-    print("directo")
     if math.fabs(math.sin(ALPHA)) < EPSILON_ANG:        
         phi2, L2 = direct_curva_meridian(plat, elli, phi1, L1, ALPHA, DIST)
         return phi2, L2
@@ -1478,7 +1477,6 @@ def edos_L_area_normal_(plat, elli, cs, y, L):
     R_tau_sq = elli.R2**2
     tau = lat2latn6(plat.PARA2AUTH, beta)
     dS_dL = R_tau_sq * math.sin(tau)
-    #dS_dL = math.fabs(dS_dL)
     return np.array([dbeta_dL, ds_dL, dS_dL])
 
 def edos_L_dist_normal_(plat, elli, cs, y, L):    
@@ -1501,8 +1499,7 @@ def edos_beta_area_normal_(plat, elli, cs, y, h, beta):
     ds_dbeta = elli.a * math.sqrt((1 - elli.e2*cbeta**2) + cbeta**2 * dL_dbeta**2)        
     R_tau_sq = elli.R2**2
     tau = lat2latn6(plat.PARA2AUTH, beta)
-    dS_dbeta = R_tau_sq * math.sin(tau) * dL_dbeta
-    #dS_dbeta = math.fabs(dS_dbeta)
+    dS_dbeta = R_tau_sq * math.sin(tau) * dL_dbeta    
     return np.array([dL_dbeta, ds_dbeta, dS_dbeta])
 
 def edos_beta_dist_normal_(plat, elli, cs, y, h, beta):
@@ -1720,6 +1717,7 @@ from shapely.geometry import Point, LineString
 import geopandas as gpd
 import pandas as pd
 
+#kml asume que todo es WGS84/GRS80. Esto es un problema si el elipsoide usado es otro
 def guardar_curva_kmz(pathpoints, nombre_archivo):
     kml = simplekml.Kml()
     ls = kml.newlinestring(name="Curva Área Central Sect")        
@@ -1741,12 +1739,15 @@ def guardar_curva_kmz(pathpoints, nombre_archivo):
     ls.description = html_tabla
     kml.savekmz(nombre_archivo)
 
+#por defecto guarda el crs como GRS80, geodésicas
+#falta implementar otros casos o bien no guardar crs
 def guardar_como_point_shapefile(pathpoints, nombre_archivo):
     df = pd.DataFrame(pathpoints, columns=['Latitud', 'Longitud', 'Acimut', 'Distancia', 'Area'])    
     geometria = [Point(xy) for xy in zip(df['Longitud'], df['Latitud'])]    
     gdf = gpd.GeoDataFrame(df, geometry=geometria, crs="EPSG:4326")
     gdf.to_file(nombre_archivo)
     print(f"Shapefile guardado como '{nombre_archivo}' con {len(gdf)} puntos y 5 columnas de datos.")
+
 
 def guardar_como_linea_shapefile(pathpoints, nombre_archivo="curva_linea.shp"):
     coords = [(lon, lat) for lat, lon in pathpoints[:, :2]]
@@ -1779,16 +1780,16 @@ def leer_poligono_archivo(filepath):
         lat, lon = None, None
         try:
             if len(parts) == 2:
-                # Formato: lat, lon
+                # lat, lon
                 lat, lon = float(parts[0]), float(parts[1])
             elif len(parts) == 3:
-                # Podría ser: etiqueta, lat, lon  O  lat, lon, altura
+                # etiqueta, lat, lon  O  lat, lon, altura
                 try:
                     lat, lon = float(parts[0]), float(parts[1])
                 except ValueError:
                     lat, lon = float(parts[1]), float(parts[2])
             elif len(parts) >= 4:
-                # Formato: etiqueta, lat, lon, altura (se ignoran columnas extra)
+                # etiqueta, lat, lon, altura (se ignoran columnas extra)
                 lat, lon = float(parts[1]), float(parts[2])
             else:
                 return None
