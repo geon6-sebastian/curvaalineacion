@@ -3,7 +3,8 @@
 La curva de alineación representa, en forma ideal, la trayectoria del eje de colimación de un teodolito. A diferencia de las secciones normales y centrales, la curva de alineación no es plana sino que tiene torsión, lo que impide soluciones analíticas directas para los problemas geodésicos directo e inverso. En "curvas.py" se implementan las fórmulas de la curva a partir de su función implícita y sus derivadas, formulando sistemas de ecuaciones diferenciales ordinarias para el cálculo de acimut, longitud y área. El problema inverso se resuelve eficientemente mediante integración numérica con el método de Dormand-Prince. El problema directo requiere un esquema iterativo de Newton-Raphson bivariado con derivadas numéricas, resultando computacionalmente costoso. Además no es una implementación robusta y debe ser siempre comprobado con el problema inverso. Esta forma de resolverlo se extiende a los casos de la sección normal primera y la sección central.
 La curvas suelen ser similares excepto cuando los puntos terminales están cerca de ser antipodales. En este ejemplo se representan las curvas de alineación (verde), sección normal (magenta) y sección central (negro) con puntos terminales (latitud, longitud): (-30, 0) y (30, 179)
 
-![a](D:\data\Notas\Geodesia\curvaalineacion\fig02.png)
+!["Curvas de alineación, sección normal y central"](./fig02.png)
+
 
 ## Tabla de Contenidos
 
