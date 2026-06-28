@@ -112,7 +112,7 @@ python curvas.py -poly coords.csv -o nombre_poligono -t align -o poligono
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto está bajo la Licencia MIT.
 
