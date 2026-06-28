@@ -8,11 +8,11 @@ La curvas suelen ser similares excepto cuando los puntos terminales están cerca
 
 ## Tabla de Contenidos
 
-- [Requisitos](#-requisitos)
-- [Instalación](#-instalación)
-- [Uso](#-uso)
-- [Ejemplos](#-ejemplos)
-- [Licencia](#-licencia)
+- [Requisitos](#Rrequisitos)
+- [Instalación](#Instalación)
+- [Uso](#Uso)
+- [Ejemplos](#Ejemplos)
+- [Licencia](#Licencia)
 
 ## Requisitos
 
