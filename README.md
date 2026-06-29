@@ -80,7 +80,7 @@ python curvas.py [argumentos]
 
 ## Ejemplos
 
-**Ejemplo con puntos cercanos a ser antipodales (Problema directo, paso 0.1 grados):**
+**Ejemplo con puntos cercanos a ser antipodales (Problema inverso, paso 0.1 grados):**
 
 ```bash
 python curvas.py -i -P1 -30 0 -P2 30 179 -t align -o curva_align
