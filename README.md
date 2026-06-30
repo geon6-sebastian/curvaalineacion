@@ -184,7 +184,7 @@ Latitud Vértice phi0 (deg): 48.6480754482
 Longitud Vértice L0 (deg): 28.2981412449
 ========================================
 ```
-En el paper Meyer escribe "...the arc length of the curve of alignment was computed by recursively bisecting the curve into linear segments and summing the lengths of the segments until the length converged to submillimeter levels.", pero no tengo forma de reproducir el método de cálculo
+En el paper Meyer escribe "...the arc length of the curve of alignment was computed by recursively bisecting the curve into linear segments and summing the lengths of the segments until the length converged to submillimeter levels.", pero no tengo forma de reproducir el método de cálculo.
 ## Licencia
 
 Este proyecto está bajo la Licencia MIT.
